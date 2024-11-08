@@ -4,11 +4,13 @@ import me.srinathsilla.tinder_ai_backend.profiles.ProfileRepository;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -37,6 +39,26 @@ public class ConversationController {
                 new ArrayList<>()
         );
 
+        conversationRepository.save(conversation);
+        return conversation;
+    }
+
+    @PostMapping("/conversations/{conversationId}")
+    public Conversation addMessageToConversation(@PathVariable String conversationId, @RequestBody ChatMessage chatMessage){
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found id: " + conversationId));
+        profileRepository.findById(chatMessage.authorId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found with id: " + chatMessage.authorId()));
+
+        // TODO: Need to validate that the authorId is the same as the profileId in the conversation
+
+        ChatMessage messageWithTime = new ChatMessage(
+                chatMessage.messageText(),
+                chatMessage.authorId(),
+                LocalDateTime.now()
+        );
+
+        conversation.messages().add(messageWithTime);
         conversationRepository.save(conversation);
         return conversation;
     }
