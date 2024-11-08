@@ -30,18 +30,35 @@ public class TinderAiBackendApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+
+		profileRepository.deleteAll();
+		conversationRepository.deleteAll();
+
 		Profile profile = new Profile(
 				"1",
 				"Srinath",
 				"Silla",
 				"25",
-				"Hindu",
+				"Indian",
 				Gender.MALE,
 				"Software Engineer",
 				"https://www.google.com",
 				"INTJ"
 		);
 
+		profileRepository.save(profile);
+
+		profile = new Profile(
+				"2",
+				"John",
+				"Doe",
+				"25",
+				"Indian",
+				Gender.MALE,
+				"Software Engineer",
+				"https://www.google.com",
+				"INTJ"
+		);
 		profileRepository.save(profile);
 		profileRepository.findAll().forEach(System.out::println);
 
