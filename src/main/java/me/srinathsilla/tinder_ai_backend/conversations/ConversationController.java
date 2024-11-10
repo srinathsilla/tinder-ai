@@ -1,7 +1,6 @@
 package me.srinathsilla.tinder_ai_backend.conversations;
 
 import me.srinathsilla.tinder_ai_backend.profiles.ProfileRepository;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +18,8 @@ public class ConversationController {
 
     @Autowired
     public ProfileRepository profileRepository;
+
+
 
     public ConversationController(ConversationRepository conversationRepository, ProfileRepository profileRepository){
         this.conversationRepository = conversationRepository;

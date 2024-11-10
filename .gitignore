@@ -58,3 +58,7 @@ build/
 ### VS Code ###
 .vscode/
 
+### Profiles and Images ###
+src/main/resources/static
+profiles.json
+
