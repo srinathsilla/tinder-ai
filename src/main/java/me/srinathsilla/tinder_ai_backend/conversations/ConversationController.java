@@ -1,5 +1,6 @@
 package me.srinathsilla.tinder_ai_backend.conversations;
 
+import me.srinathsilla.tinder_ai_backend.profiles.Profile;
 import me.srinathsilla.tinder_ai_backend.profiles.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,19 +14,20 @@ import java.util.UUID;
 @RestController
 public class ConversationController {
 
-    @Autowired
-    public ConversationRepository conversationRepository;
 
-    @Autowired
-    public ProfileRepository profileRepository;
-
+    private final ConversationRepository conversationRepository;
+    private final ProfileRepository profileRepository;
+    private final ConversationService conversationService;
 
 
-    public ConversationController(ConversationRepository conversationRepository, ProfileRepository profileRepository){
+
+    public ConversationController(ConversationRepository conversationRepository, ProfileRepository profileRepository, ConversationService conversationService){
         this.conversationRepository = conversationRepository;
         this.profileRepository = profileRepository;
+        this.conversationService = conversationService;
     }
 
+    @CrossOrigin(origins = "*")
     @PostMapping("/conversations")
     public Conversation createConversation(@RequestBody CreateConversationRequest request){
         profileRepository.findById(request.profileId())
@@ -41,6 +43,7 @@ public class ConversationController {
         return conversation;
     }
 
+    @CrossOrigin(origins = "*")
     @GetMapping("/conversations/{conversationId}")
     public Conversation getConversation(@PathVariable String conversationId){
         return conversationRepository.findById(conversationId)
@@ -48,11 +51,18 @@ public class ConversationController {
 
     }
 
+    @CrossOrigin(origins = "*")
     @PostMapping("/conversations/{conversationId}")
     public Conversation addMessageToConversation(@PathVariable String conversationId, @RequestBody ChatMessage chatMessage){
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found id: " + conversationId));
-        profileRepository.findById(chatMessage.authorId())
+
+        String matchProfileId = conversation.profileId();
+
+        Profile profile = profileRepository.findById(matchProfileId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found with id: " + matchProfileId));
+
+        Profile user = profileRepository.findById(chatMessage.authorId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found with id: " + chatMessage.authorId()));
 
         // TODO: Need to validate that the authorId is the same as the profileId in the conversation
@@ -64,6 +74,7 @@ public class ConversationController {
         );
 
         conversation.messages().add(messageWithTime);
+        conversationService.generateProfileResponse(conversation, profile, user);
         conversationRepository.save(conversation);
         return conversation;
     }
